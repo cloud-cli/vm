@@ -72,4 +72,4 @@ async function prune() {
   return '';
 }
 
-export default { add, list, show, delete: remove, prune };
+export default { add, remove, list, show, prune };
