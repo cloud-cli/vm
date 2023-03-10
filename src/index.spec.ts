@@ -104,14 +104,14 @@ describe('volume manager', () => {
       const execOutput = { ok: true, stdout: '' };
       execMocks.exec = jest.fn().mockResolvedValue(execOutput);
 
-      await expect(vm.delete({ name: 'test' })).resolves.toEqual('');
+      await expect(vm.remove({ name: 'test' })).resolves.toEqual('');
 
       expect(exec.exec).toHaveBeenCalledWith('docker', ['volume', 'rm', 'test']);
     });
 
     it('should throw error if volume name is invalid', async () => {
       execMocks.exec = jest.fn();
-      await expect(vm.delete({ name: 'In$%valid' })).rejects.toThrowError('Invalid name');
+      await expect(vm.remove({ name: 'In$%valid' })).rejects.toThrowError('Invalid name');
       expect(exec.exec).not.toHaveBeenCalled();
     });
 
@@ -119,7 +119,7 @@ describe('volume manager', () => {
       const output = { ok: false, stdout: '' };
       execMocks.exec = jest.fn().mockResolvedValue(output);
 
-      await expect(vm.delete({ name: 'failed' })).rejects.toThrowError('Unable to remove volume');
+      await expect(vm.remove({ name: 'failed' })).rejects.toThrowError('Unable to remove volume');
     });
   });
 
