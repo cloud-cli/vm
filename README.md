@@ -9,9 +9,9 @@ npm i @cloud-cli/vm
 ```js
 // cloudy.conf.mjs
 
-import volumes from "@cloud-cli/vm";
+import volume from '@cloud-cli/vm';
 
-export default { volumes };
+export default { volume };
 ```
 
 ## API
@@ -25,29 +25,23 @@ cy volume.add --name "foo"
 **Remove a volume**
 
 ```
-cy proxy.remove --name "foo"
+cy volume.remove --name "foo"
 ```
 
-**Get details of a proxy**
+**Get details of a volume**
 
 ```
-cy proxy.get --domain "foo.example.com"
+cy volume.show --name "foo"
 ```
 
 **List volumes**
 
 ```
-cy proxy.list
+cy volume.list
 ```
 
-**List registered domains**
+**Prune unused volumes**
 
 ```
-cy proxy.domains
-```
-
-**Reload all configurations**
-
-```
-cy proxy.reload
+cy volume.prune
 ```
