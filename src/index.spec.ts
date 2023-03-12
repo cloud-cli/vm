@@ -33,7 +33,7 @@ describe('volume manager', () => {
       execMocks.exec = jest.fn().mockResolvedValue(execOutput);
 
       await expect(vm.list()).resolves.toEqual(['test', 'test2']);
-      expect(exec.exec).toHaveBeenCalledWith('docker', ['volume', 'ls', '--format="{{.Name}}"']);
+      expect(exec.exec).toHaveBeenCalledWith('docker', ['volume', 'ls', '--format={{.Name}}']);
     });
 
     it('should reject in case of error', async () => {

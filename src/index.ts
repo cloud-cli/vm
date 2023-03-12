@@ -9,7 +9,7 @@ interface NameOption {
 }
 
 async function list() {
-  const output = await exec('docker', ['volume', 'ls', '--format="{{.Name}}"']);
+  const output = await exec('docker', ['volume', 'ls', '--format={{.Name}}']);
 
   if (!output.ok) {
     throw new Error('Unable to list volumes');
