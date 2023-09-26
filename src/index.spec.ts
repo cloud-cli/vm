@@ -44,6 +44,25 @@ describe('volume manager', () => {
     });
   });
 
+  describe('ls', () => {
+    it('should list files of a volume and path', async () => {
+      const outputs = [inspectOutput, 'dir', 'a.txt\nb.txt'];
+      execMocks.exec = jest.fn().mockImplementation(() => ({ ok: true, stdout: outputs.shift() }));
+
+      await expect(vm.ls({ name: 'test' })).resolves.toEqual(['dir']);
+      await expect(vm.ls({ name: 'test', path: 'dir' })).resolves.toEqual(['a.txt', 'b.txt']);
+
+      expect(exec.exec).toHaveBeenCalledWith('docker', ['volume', 'inspect', 'test']);
+      expect(exec.exec).toHaveBeenCalledWith('ls', ['-1', '/var/lib/docker/volumes/test/_data']);
+      expect(exec.exec).toHaveBeenCalledWith('ls', ['-1', '/var/lib/docker/volumes/test/_data/dir']);
+    });
+
+    it('should throw an error if volume name is invalid', async () => {
+      execMocks.exec = jest.fn().mockImplementation(() => ({ ok: true, stdout: '[]' }));
+      await expect(vm.ls({ name: 'notfound' })).rejects.toThrowError('Volume not found');
+    });
+  });
+
   describe('show', () => {
     it('should show details of a volume', async () => {
       const execOutput = { ok: true, stdout: inspectOutput };
@@ -61,7 +80,7 @@ describe('volume manager', () => {
       expect(exec.exec).toHaveBeenCalledWith('docker', ['volume', 'inspect', 'test']);
     });
 
-    it('should throw error if volume name is invalid', async () => {
+    it('should throw an error if volume name is invalid', async () => {
       execMocks.exec = jest.fn();
       await expect(vm.show({ name: 'In$%valid' })).rejects.toThrowError('Invalid name');
       expect(exec.exec).not.toHaveBeenCalled();
@@ -80,7 +99,7 @@ describe('volume manager', () => {
       const execOutput = { ok: true, stdout: 'test' };
       execMocks.exec = jest.fn().mockResolvedValue(execOutput);
 
-      await expect(vm.add({ name: 'test' })).resolves.toEqual('');
+      await expect(vm.add({ name: 'test' })).resolves.toEqual(true);
 
       expect(exec.exec).toHaveBeenCalledWith('docker', ['volume', 'create', 'test']);
     });
@@ -99,12 +118,12 @@ describe('volume manager', () => {
     });
   });
 
-  describe('delete', () => {
+  describe('remove', () => {
     it('should add a volume', async () => {
       const execOutput = { ok: true, stdout: '' };
       execMocks.exec = jest.fn().mockResolvedValue(execOutput);
 
-      await expect(vm.remove({ name: 'test' })).resolves.toEqual('');
+      await expect(vm.remove({ name: 'test' })).resolves.toEqual(true);
 
       expect(exec.exec).toHaveBeenCalledWith('docker', ['volume', 'rm', 'test']);
     });
