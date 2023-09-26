@@ -46,7 +46,7 @@ describe('volume manager', () => {
 
   describe('ls', () => {
     it('should list files of a volume and path', async () => {
-      const outputs = [inspectOutput, 'dir', 'a.txt\nb.txt'];
+      const outputs = [inspectOutput, 'dir', inspectOutput, 'a.txt\nb.txt'];
       execMocks.exec = jest.fn().mockImplementation(() => ({ ok: true, stdout: outputs.shift() }));
 
       await expect(vm.ls({ name: 'test' })).resolves.toEqual(['dir']);
