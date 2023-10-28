@@ -80,13 +80,13 @@ describe('volume manager', () => {
 
     it('should throw an error if volume name is invalid', async () => {
       execMocks.exec = jest.fn().mockImplementation(() => ({ ok: true, stdout: '[]' }));
-      await expect(vm.rm({ name: 'notfound' })).rejects.toThrowError('Volume not found');
+      await expect(vm.rm({ name: 'notfound', path: 'file.txt' })).rejects.toThrowError('Volume not found');
     });
 
     it('should throw an error if path is invalid', async () => {
       execMocks.exec = jest.fn().mockImplementation(() => ({ ok: true, stdout: inspectOutput }));
       await expect(vm.rm({ name: 'nopath' })).rejects.toThrowError('Path not specified');
-      expect(execMocks.exec).toHaveBeenCalledTimes(1);
+      expect(execMocks.exec).not.toHaveBeenCalled();
     });
   });
 
@@ -103,13 +103,13 @@ describe('volume manager', () => {
 
     it('should throw an error if volume name is invalid', async () => {
       execMocks.exec = jest.fn().mockImplementation(() => ({ ok: true, stdout: '[]' }));
-      await expect(vm.cat({ name: 'notfound' })).rejects.toThrowError('Volume not found');
+      await expect(vm.cat({ name: 'notfound', path: 'file.txt' })).rejects.toThrowError('Volume not found');
     });
 
     it('should throw an error if path is invalid', async () => {
       execMocks.exec = jest.fn().mockImplementation(() => ({ ok: true, stdout: inspectOutput }));
       await expect(vm.cat({ name: 'nopath' })).rejects.toThrowError('Path not specified');
-      expect(execMocks.exec).toHaveBeenCalledTimes(1);
+      expect(execMocks.exec).not.toHaveBeenCalled();
     });
   });
 
