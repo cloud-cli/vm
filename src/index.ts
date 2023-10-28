@@ -1,4 +1,5 @@
 import { join } from "node:path";
+import { readFile } from "node:fs/promises";
 import { exec } from "@cloud-cli/exec";
 
 const nameRe = /^[a-z][a-z0-9-]+$/;
@@ -24,8 +25,7 @@ async function list() {
   return output.stdout.trim().split("\n");
 }
 
-async function ls(options: NameAndPathOption) {
-  const { name, path = "" } = options;
+async function getVolumeMountpoint(name): Promise<string> {
   const output = await exec("docker", ["volume", "inspect", name]);
   const volumes = JSON.parse(output.stdout);
 
@@ -33,10 +33,34 @@ async function ls(options: NameAndPathOption) {
     throw new Error("Volume not found");
   }
 
-  const root = volumes[0].Mountpoint;
+  return volumes[0].Mountpoint;
+}
+
+async function ls(options: NameAndPathOption) {
+  const { name, path = "" } = options;
+  const root = await getVolumeMountpoint(name);
   const files = await exec("ls", ["-1", join(root, path)]);
 
   return files.stdout.trim().split("\n");
+}
+
+async function rm(options: NameAndPathOption) {
+  const { name, path } = options;
+
+  if (!path) {
+    throw new Error('Path not specified');
+  }
+
+  const root = await getVolumeMountpoint(name);
+  const result = await exec("rm", ['-r', join(root, path)]);
+
+  return result.ok;
+}
+
+async function cat(options: NameAndPathOption) {
+  const { name, path } = options;
+  const root = await getVolumeMountpoint(name);
+  return await readFile(join(root, path), 'utf8');
 }
 
 async function show(options: NameOption) {
@@ -93,4 +117,4 @@ async function prune() {
   return "";
 }
 
-export default { add, remove, list, show, prune, ls };
+export default { add, remove, list, show, prune, ls, rm, cat };

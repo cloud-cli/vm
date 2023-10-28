@@ -2,12 +2,16 @@ const execMocks = {
   exec: jest.fn(),
 };
 
-jest.mock('@cloud-cli/exec', () => {
-  return execMocks;
-});
+const fsMocks = {
+  readFile: jest.fn(),
+};
+
+jest.mock('@cloud-cli/exec', () => execMocks);
+jest.mock('node:fs/promises', () => fsMocks);
 
 import vm from './index';
 import * as exec from '@cloud-cli/exec';
+import * as fs from 'node:fs/promises';
 
 const inspectOutput = `[{
 "CreatedAt": "2023-03-10T10:15:10Z",
@@ -60,6 +64,52 @@ describe('volume manager', () => {
     it('should throw an error if volume name is invalid', async () => {
       execMocks.exec = jest.fn().mockImplementation(() => ({ ok: true, stdout: '[]' }));
       await expect(vm.ls({ name: 'notfound' })).rejects.toThrowError('Volume not found');
+    });
+  });
+
+  describe('rm', () => {
+    it('should remove files of a volume by path', async () => {
+      const outputs = [inspectOutput, ''];
+      execMocks.exec = jest.fn().mockImplementation(() => ({ ok: true, stdout: outputs.shift() }));
+
+      await expect(vm.rm({ name: 'test', path: 'file.txt' })).resolves.toEqual(true);
+
+      expect(exec.exec).toHaveBeenCalledWith('docker', ['volume', 'inspect', 'test']);
+      expect(exec.exec).toHaveBeenCalledWith('rm', ['-r', '/var/lib/docker/volumes/test/_data/file.txt']);
+    });
+
+    it('should throw an error if volume name is invalid', async () => {
+      execMocks.exec = jest.fn().mockImplementation(() => ({ ok: true, stdout: '[]' }));
+      await expect(vm.rm({ name: 'notfound' })).rejects.toThrowError('Volume not found');
+    });
+
+    it('should throw an error if path is invalid', async () => {
+      execMocks.exec = jest.fn().mockImplementation(() => ({ ok: true, stdout: inspectOutput }));
+      await expect(vm.rm({ name: 'nopath' })).rejects.toThrowError('Path not specified');
+      expect(execMocks.exec).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('cat', () => {
+    it('should read the content of a file in a volume by path', async () => {
+      execMocks.exec = jest.fn().mockImplementation(() => ({ ok: true, stdout: inspectOutput }));
+      fsMocks.readFile = jest.fn().mockImplementation(() => 'test file');
+
+      await expect(vm.cat({ name: 'test', path: 'file.txt' })).resolves.toEqual('test file');
+
+      expect(exec.exec).toHaveBeenCalledWith('docker', ['volume', 'inspect', 'test']);
+      expect(fs.readFile).toHaveBeenCalledWith('/var/lib/docker/volumes/test/_data/file.txt', 'utf8');
+    });
+
+    it('should throw an error if volume name is invalid', async () => {
+      execMocks.exec = jest.fn().mockImplementation(() => ({ ok: true, stdout: '[]' }));
+      await expect(vm.cat({ name: 'notfound' })).rejects.toThrowError('Volume not found');
+    });
+
+    it('should throw an error if path is invalid', async () => {
+      execMocks.exec = jest.fn().mockImplementation(() => ({ ok: true, stdout: inspectOutput }));
+      await expect(vm.cat({ name: 'nopath' })).rejects.toThrowError('Path not specified');
+      expect(execMocks.exec).toHaveBeenCalledTimes(1);
     });
   });
 
