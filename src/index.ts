@@ -44,6 +44,14 @@ async function ls(options: NameAndPathOption) {
   return files.stdout.trim().split('\n');
 }
 
+async function fixPermissions(options: NameOption) {
+  const { name } = options;
+  const root = await getVolumeMountpoint(name);
+  const result = await exec('chmod', ['-R', 'a+w', root]);
+
+  return result.ok;
+}
+
 async function rm(options: NameAndPathOption) {
   const { name, path } = options;
 
@@ -122,4 +130,4 @@ async function prune() {
   return '';
 }
 
-export default { add, remove, list, show, prune, ls, rm, cat };
+export default { add, remove, list, show, prune, ls, rm, cat, fixPermissions };

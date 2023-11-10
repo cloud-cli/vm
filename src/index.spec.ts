@@ -48,6 +48,17 @@ describe('volume manager', () => {
     });
   });
 
+  describe('fixPermissions', () => {
+    it('should fix write permissions on volume folder', async () => {
+      const outputs = [inspectOutput, ''];
+      execMocks.exec = jest.fn().mockImplementation(() => ({ ok: true, stdout: outputs.shift() }));
+
+      await expect(vm.fixPermissions({ name: 'test' })).resolves.toEqual(true);
+      expect(exec.exec).toHaveBeenCalledWith('docker', ['volume', 'inspect', 'test']);
+      expect(exec.exec).toHaveBeenCalledWith('chmod', ['-R', 'a+w', '/var/lib/docker/volumes/test/_data']);
+    });
+  });
+
   describe('ls', () => {
     it('should list files of a volume and path', async () => {
       const outputs = [inspectOutput, 'dir', inspectOutput, 'a.txt\nb.txt'];
