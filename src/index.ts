@@ -41,7 +41,7 @@ async function ls(options: NameAndPathOption) {
   const root = await getVolumeMountpoint(name);
   const files = await exec('ls', ['-1', join(root, path)]);
 
-  return files.stdout.trim().split('\n');
+  return files.stdout.trim().split('\n').filter(Boolean);
 }
 
 async function fixPermissions(options: NameOption) {
