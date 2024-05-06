@@ -2,13 +2,12 @@
   "name": "@cloud-cli/vm",
   "version": "0.0.0",
   "description": "Docker volume management",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "type": "module",
   "prettier": "@cloud-cli/prettier-config",
   "scripts": {
-    "test": "jest",
-    "tdd": "jest --watchAll",
+    "test": "vitest",
     "build": "tsc"
   },
   "keywords": [
@@ -24,11 +23,15 @@
   "author": "Darlan Alves <me@darlanalv.es>",
   "license": "MIT",
   "devDependencies": {
-    "@cloud-cli/jest-config": "^1.0.0",
     "@cloud-cli/prettier-config": "^1.0.0",
-    "@cloud-cli/typescript-config": "^1.0.1"
+    "@cloud-cli/typescript-config": "^1.0.1",
+    "typescript": "^5.4.5",
+    "vitest": "^1.6.0"
   },
   "dependencies": {
     "@cloud-cli/exec": "^1.0.1"
+  },
+  "peerDependencies": {
+    "@cloud-cli/cli": "^2.0.0"
   }
 }

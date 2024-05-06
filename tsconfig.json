@@ -1,7 +1,9 @@
 {
   "extends": "@cloud-cli/typescript-config",
   "compilerOptions": {
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "moduleResolution": "Bundler",
+    "skipLibCheck": true
   },
   "include": ["./src/*.ts"]
 }
