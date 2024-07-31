@@ -5,12 +5,22 @@ import { exec } from '@cloud-cli/exec';
 const nameRe = /^[a-z][a-z0-9-]+$/;
 const isValidName = (name) => nameRe.test(name);
 const invalidNameError = new Error('Invalid name');
+const readOptions = (options: NameOption) => {
+  options.name ||= options._[0];
+  if (!isValidName(options.name)) {
+    throw invalidNameError;
+  }
+}
 
-interface NameOption {
+interface Options {
+  _: string[];
+}
+
+interface NameOption extends Options {
   name: string;
 }
 
-interface NameAndPathOption {
+interface NameAndPathOption extends Options {
   name: string;
   path?: string;
 }
@@ -37,6 +47,7 @@ async function getVolumeMountpoint(name): Promise<string> {
 }
 
 async function ls(options: NameAndPathOption) {
+  readOptions(options);
   const { name, path = '' } = options;
   const root = await getVolumeMountpoint(name);
   const files = await exec('ls', ['-1', join(root, path)]);
@@ -45,6 +56,7 @@ async function ls(options: NameAndPathOption) {
 }
 
 async function fixPermissions(options: NameOption) {
+  readOptions(options);
   const { name } = options;
   const root = await getVolumeMountpoint(name);
   const result = await exec('chmod', ['-R', 'a+w', root]);
@@ -53,6 +65,7 @@ async function fixPermissions(options: NameOption) {
 }
 
 async function rm(options: NameAndPathOption) {
+  readOptions(options);
   const { name, path } = options;
 
   if (!path) {
@@ -66,6 +79,7 @@ async function rm(options: NameAndPathOption) {
 }
 
 async function cat(options: NameAndPathOption) {
+  readOptions(options);
   const { name, path } = options;
 
   if (!path) {
@@ -77,9 +91,7 @@ async function cat(options: NameAndPathOption) {
 }
 
 async function show(options: NameOption) {
-  if (!isValidName(options.name)) {
-    throw invalidNameError;
-  }
+  readOptions(options);
 
   const output = await exec('docker', ['volume', 'inspect', options.name]);
   const list = JSON.parse(output.stdout);
@@ -98,13 +110,11 @@ async function show(options: NameOption) {
 }
 
 async function add(options: NameOption) {
-  if (!isValidName(options.name)) {
-    throw invalidNameError;
-  }
-
+  readOptions(options);
   const output = await exec('docker', ['volume', 'create', options.name]);
 
   if (output.ok) {
+    await fixPermissions(options)
     return true;
   }
 
@@ -112,10 +122,7 @@ async function add(options: NameOption) {
 }
 
 async function remove(options: NameOption) {
-  if (!isValidName(options.name)) {
-    throw invalidNameError;
-  }
-
+  readOptions(options);
   const output = await exec('docker', ['volume', 'rm', options.name]);
 
   if (output.ok) {
