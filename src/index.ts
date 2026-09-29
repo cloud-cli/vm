@@ -10,7 +10,7 @@ const readOptions = (options: NameOption) => {
   if (!isValidName(options.name)) {
     throw invalidNameError;
   }
-}
+};
 
 interface Options {
   _: string[];
@@ -114,7 +114,7 @@ async function add(options: NameOption) {
   const output = await exec('docker', ['volume', 'create', options.name]);
 
   if (output.ok) {
-    await fixPermissions(options)
+    await fixPermissions(options);
     return true;
   }
 
@@ -137,4 +137,30 @@ async function prune() {
   return '';
 }
 
-export default { add, remove, list, show, prune, ls, rm, cat, fixPermissions };
+export default {
+  add,
+  remove,
+  list,
+  show,
+  prune,
+  ls,
+  rm,
+  cat,
+  fixPermissions,
+  help: () => ({
+    description: 'Manage Docker volumes',
+    commands: {
+      'vm add [name]': 'Create a new Docker volume (name must be lowercase alphanumeric with hyphens)',
+      'vm rm [name] [path]': 'Remove files or a volume by name',
+      'vm ls [name] [path]': 'List files in a volume (optional path within volume)',
+      'vm cat [name] [path]': 'Read a file from a volume (optional path within volume)',
+      'vm fixpermissions [name]': 'Fix permissions on a volume',
+      'vm prune': 'Remove all unused Docker volumes',
+      'vm ls': 'List all Docker volumes',
+    },
+    options: {
+      name: 'Volume name (lowercase alphanumeric with hyphens)',
+      path: 'Path within the volume',
+    },
+  }),
+};
