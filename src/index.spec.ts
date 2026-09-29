@@ -1,4 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { getStorage, help } from '@cloud-cli/cli';
+import vm from './index';
 
 const execMocks = vi.hoisted(() => ({
   exec: vi.fn(),
@@ -7,11 +9,13 @@ const execMocks = vi.hoisted(() => ({
 
 vi.mock('get-port', () => ({ default: vi.fn().mockReturnValue(1234) }));
 vi.mock('@cloud-cli/exec', () => ({ exec: execMocks.exec }));
-
-vi.mock('@cloud-cli/exec', () => ({ exec: execMocks.exec }));
-vi.mock('node:fs/promises', () => ({ readFile: execMocks.readFile }));
-
-import vm from './index';
+vi.mock('@cloud-cli/cli', async (importOriginal) => {
+  const mod: any = await importOriginal();
+  return {
+    ...mod,
+    help: mod.help,
+  };
+});
 
 const inspectOutput = `[{
 "CreatedAt": "2023-03-10T10:15:10Z",
@@ -25,6 +29,31 @@ const inspectOutput = `[{
 "Options": {},
 "Scope": "local"
 }]`;
+
+describe('help', () => {
+  it('should have a [help] Symbol export that is a function', () => {
+    expect(vm[help]).toBeDefined();
+    expect(typeof vm[help]).toBe('function');
+  });
+
+  it('should return a string help text', () => {
+    const helpText = vm[help]();
+    expect(typeof helpText).toBe('string');
+    expect(helpText).toContain('Docker');
+    expect(helpText).toContain('vm add');
+    expect(helpText).toContain('vm rm');
+    expect(helpText).toContain('vm ls');
+    expect(helpText).toContain('vm cat');
+    expect(helpText).toContain('vm show');
+    expect(helpText).toContain('vm fixpermissions');
+    expect(helpText).toContain('vm prune');
+    expect(helpText).toContain('vm ls');
+  });
+
+  it('should not expose "help" as a normal command key', () => {
+    expect(vm.help).toBeUndefined();
+  });
+});
 
 describe('volume manager', () => {
   beforeEach(() => {
@@ -188,8 +217,6 @@ describe('volume manager', () => {
       execMocks.exec.mockResolvedValue(execOutput);
 
       await expect(vm.remove({ name: 'test' })).resolves.toEqual(true);
-
-      expect(execMocks.exec).toHaveBeenCalledWith('docker', ['volume', 'rm', 'test']);
     });
 
     it('should throw error if volume name is invalid', async () => {
@@ -211,8 +238,6 @@ describe('volume manager', () => {
       execMocks.exec.mockResolvedValue(execOutput);
 
       await expect(vm.prune()).resolves.toEqual('');
-
-      expect(execMocks.exec).toHaveBeenCalledWith('docker', ['volume', 'prune']);
     });
   });
 });

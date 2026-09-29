@@ -1,6 +1,7 @@
 import { join } from 'node:path';
 import { readFile } from 'node:fs/promises';
 import { exec } from '@cloud-cli/exec';
+import { help } from '@cloud-cli/cli';
 
 const nameRe = /^[a-z][a-z0-9-]+$/;
 const isValidName = (name) => nameRe.test(name);
@@ -147,20 +148,19 @@ export default {
   rm,
   cat,
   fixPermissions,
-  help: () => ({
-    description: 'Manage Docker volumes',
-    commands: {
-      'vm add [name]': 'Create a new Docker volume (name must be lowercase alphanumeric with hyphens)',
-      'vm rm [name] [path]': 'Remove files or a volume by name',
-      'vm ls [name] [path]': 'List files in a volume (optional path within volume)',
-      'vm cat [name] [path]': 'Read a file from a volume (optional path within volume)',
-      'vm fixpermissions [name]': 'Fix permissions on a volume',
-      'vm prune': 'Remove all unused Docker volumes',
-      'vm ls': 'List all Docker volumes',
-    },
-    options: {
-      name: 'Volume name (lowercase alphanumeric with hyphens)',
-      path: 'Path within the volume',
-    },
-  }),
+  [help]: () => `Manage Docker volumes
+
+Available commands:
+  vm add [name] - Create a new Docker volume (name must be lowercase alphanumeric with hyphens)
+  vm rm [name] [path] - Remove files or a volume by name
+  vm ls [name] [path] - List files in a volume (optional path within volume)
+  vm cat [name] [path] - Read a file from a volume (optional path within volume)
+  vm show [name] - Show volume details
+  vm fixpermissions [name] - Fix permissions on a volume
+  vm prune - Remove all unused Docker volumes
+  vm ls - List all Docker volumes
+
+Options:
+  name - Volume name (lowercase alphanumeric with hyphens)
+  path - Path within the volume`,
 };
