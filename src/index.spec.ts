@@ -41,13 +41,14 @@ describe('help', () => {
     expect(typeof helpText).toBe('string');
     expect(helpText).toContain('Docker');
     expect(helpText).toContain('vm add');
-    expect(helpText).toContain('vm rm');
+    expect(helpText).toContain('vm remove');
+    expect(helpText).toContain('vm list');
     expect(helpText).toContain('vm ls');
     expect(helpText).toContain('vm cat');
     expect(helpText).toContain('vm show');
-    expect(helpText).toContain('vm fixpermissions');
+    expect(helpText).toContain('vm fixPermissions');
+    expect(helpText).toContain('vm rm');
     expect(helpText).toContain('vm prune');
-    expect(helpText).toContain('vm ls');
   });
 
   it('should not expose "help" as a normal command key', () => {

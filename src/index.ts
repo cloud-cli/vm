@@ -152,13 +152,14 @@ export default {
 
 Available commands:
   vm add [name] - Create a new Docker volume (name must be lowercase alphanumeric with hyphens)
-  vm rm [name] [path] - Remove files or a volume by name
+  vm remove [name] [path] - Remove a volume or files by name
+  vm list - List all Docker volumes
   vm ls [name] [path] - List files in a volume (optional path within volume)
   vm cat [name] [path] - Read a file from a volume (optional path within volume)
   vm show [name] - Show volume details
-  vm fixpermissions [name] - Fix permissions on a volume
+  vm fixPermissions [name] - Fix permissions on a volume
+  vm rm [name] [path] - Remove files or a volume by name
   vm prune - Remove all unused Docker volumes
-  vm ls - List all Docker volumes
 
 Options:
   name - Volume name (lowercase alphanumeric with hyphens)
