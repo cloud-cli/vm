@@ -25,6 +25,7 @@
   "devDependencies": {
     "@cloud-cli/prettier-config": "^1.0.0",
     "@cloud-cli/typescript-config": "^1.0.1",
+    "@types/node": "^20.19.43",
     "typescript": "^5.4.5",
     "vitest": "^1.6.0"
   },
@@ -32,6 +33,6 @@
     "@cloud-cli/exec": "^1.0.1"
   },
   "peerDependencies": {
-    "@cloud-cli/cli": "^2.0.0"
+    "@cloud-cli/cli": "^2.2.0"
   }
 }

@@ -1,20 +1,20 @@
-import { join } from 'node:path';
-import { readFile } from 'node:fs/promises';
-import { exec } from '@cloud-cli/exec';
-import { help } from '@cloud-cli/cli';
+import { join } from "node:path";
+import { readFile } from "node:fs/promises";
+import { exec } from "@cloud-cli/exec";
+import { help } from "@cloud-cli/cli";
 
 const nameRe = /^[a-z][a-z0-9-]+$/;
 const isValidName = (name) => nameRe.test(name);
-const invalidNameError = new Error('Invalid name');
+const invalidNameError = new Error("Invalid name");
 const readOptions = (options: NameOption) => {
-  options.name ||= options._[0];
+  options.name ||= options._?.[0];
   if (!isValidName(options.name)) {
     throw invalidNameError;
   }
 };
 
 interface Options {
-  _: string[];
+  _?: string[];
 }
 
 interface NameOption extends Options {
@@ -27,21 +27,21 @@ interface NameAndPathOption extends Options {
 }
 
 async function list() {
-  const output = await exec('docker', ['volume', 'ls', '--format={{.Name}}']);
+  const output = await exec("docker", ["volume", "ls", "--format={{.Name}}"]);
 
   if (!output.ok) {
-    throw new Error('Unable to list volumes');
+    throw new Error("Unable to list volumes");
   }
 
-  return output.stdout.trim().split('\n');
+  return output.stdout.trim().split("\n");
 }
 
 async function getVolumeMountpoint(name): Promise<string> {
-  const output = await exec('docker', ['volume', 'inspect', name]);
+  const output = await exec("docker", ["volume", "inspect", name]);
   const volumes = JSON.parse(output.stdout);
 
   if (!volumes.length) {
-    throw new Error('Volume not found');
+    throw new Error("Volume not found");
   }
 
   return volumes[0].Mountpoint;
@@ -49,18 +49,18 @@ async function getVolumeMountpoint(name): Promise<string> {
 
 async function ls(options: NameAndPathOption) {
   readOptions(options);
-  const { name, path = '' } = options;
+  const { name, path = "" } = options;
   const root = await getVolumeMountpoint(name);
-  const files = await exec('ls', ['-1', join(root, path)]);
+  const files = await exec("ls", ["-1", join(root, path)]);
 
-  return files.stdout.trim().split('\n').filter(Boolean);
+  return files.stdout.trim().split("\n").filter(Boolean);
 }
 
 async function fixPermissions(options: NameOption) {
   readOptions(options);
   const { name } = options;
   const root = await getVolumeMountpoint(name);
-  const result = await exec('chmod', ['-R', 'a+w', root]);
+  const result = await exec("chmod", ["-R", "a+w", root]);
 
   return result.ok;
 }
@@ -70,11 +70,11 @@ async function rm(options: NameAndPathOption) {
   const { name, path } = options;
 
   if (!path) {
-    throw new Error('Path not specified');
+    throw new Error("Path not specified");
   }
 
   const root = await getVolumeMountpoint(name);
-  const result = await exec('rm', ['-r', join(root, path)]);
+  const result = await exec("rm", ["-r", join(root, path)]);
 
   return result.ok;
 }
@@ -84,21 +84,21 @@ async function cat(options: NameAndPathOption) {
   const { name, path } = options;
 
   if (!path) {
-    throw new Error('Path not specified');
+    throw new Error("Path not specified");
   }
 
   const root = await getVolumeMountpoint(name);
-  return await readFile(join(root, path), 'utf8');
+  return await readFile(join(root, path), "utf8");
 }
 
 async function show(options: NameOption) {
   readOptions(options);
 
-  const output = await exec('docker', ['volume', 'inspect', options.name]);
+  const output = await exec("docker", ["volume", "inspect", options.name]);
   const list = JSON.parse(output.stdout);
 
   if (!list.length) {
-    throw new Error('Volume not found');
+    throw new Error("Volume not found");
   }
 
   const { Name, Labels, CreatedAt } = list[0];
@@ -112,30 +112,30 @@ async function show(options: NameOption) {
 
 async function add(options: NameOption) {
   readOptions(options);
-  const output = await exec('docker', ['volume', 'create', options.name]);
+  const output = await exec("docker", ["volume", "create", options.name]);
 
   if (output.ok) {
     await fixPermissions(options);
     return true;
   }
 
-  throw new Error('Unable to create volume');
+  throw new Error("Unable to create volume");
 }
 
 async function remove(options: NameOption) {
   readOptions(options);
-  const output = await exec('docker', ['volume', 'rm', options.name]);
+  const output = await exec("docker", ["volume", "rm", options.name]);
 
   if (output.ok) {
     return true;
   }
 
-  throw new Error('Unable to remove volume');
+  throw new Error("Unable to remove volume");
 }
 
 async function prune() {
-  await exec('docker', ['volume', 'prune']);
-  return '';
+  await exec("docker", ["volume", "prune"]);
+  return "";
 }
 
 export default {
@@ -151,15 +151,15 @@ export default {
   [help]: () => `Manage Docker volumes
 
 Available commands:
-  vm add [name] - Create a new Docker volume (name must be lowercase alphanumeric with hyphens)
-  vm remove [name] [path] - Remove a volume or files by name
-  vm list - List all Docker volumes
-  vm ls [name] [path] - List files in a volume (optional path within volume)
-  vm cat [name] [path] - Read a file from a volume (optional path within volume)
-  vm show [name] - Show volume details
-  vm fixPermissions [name] - Fix permissions on a volume
-  vm rm [name] [path] - Remove files or a volume by name
-  vm prune - Remove all unused Docker volumes
+  vm.add --name <name> - Create a new Docker volume (name must be lowercase alphanumeric with hyphens)
+  vm.remove --name <name> - Remove a Docker volume
+  vm.list - List all Docker volumes
+  vm.ls --name <name> [--path <path>] - List files in a volume
+  vm.cat --name <name> --path <path> - Read a file from a volume
+  vm.show --name <name> - Show volume details
+  vm.fixPermissions --name <name> - Fix permissions on a volume
+  vm.rm --name <name> --path <path> - Remove a file or directory from a volume
+  vm.prune - Remove all unused Docker volumes
 
 Options:
   name - Volume name (lowercase alphanumeric with hyphens)
